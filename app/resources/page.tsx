@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,9 +47,22 @@ const RESOURCES: Resource[] = [
 const TAGS = ["All", "AI", "DevOps", "Hosting", "CSS", "Database", "Email"] as const;
 
 export default function ResourcesPage() {
+  const [resources, setResources] = useState<Resource[]>(RESOURCES);
   const [activeTag, setActiveTag] = useState<string>("All");
 
-  const filteredResources = RESOURCES.filter(
+  useEffect(() => {
+    const stored = localStorage.getItem("custom_resources");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setResources([...RESOURCES, ...parsed]);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
+
+  const filteredResources = resources.filter(
     (r) => activeTag === "All" || r.tag === activeTag
   );
 

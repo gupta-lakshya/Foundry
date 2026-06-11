@@ -1,14 +1,55 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 export default function SubmitPage() {
+  const router = useRouter();
   const [type, setType] = useState<"idea" | "resource">("idea");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
   const [status, setStatus] = useState<"Building" | "Under review" | "Completed">("Building");
+
+  const handleTypeChange = (newType: "idea" | "resource") => {
+    setType(newType);
+    setTitle("");
+    setDescription("");
+    setCategory("");
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title || !description || !category) return;
+
+    if (type === "idea") {
+      const newIdea = {
+        id: Math.random().toString(),
+        title,
+        description,
+        status,
+        category,
+      };
+      const stored = localStorage.getItem("custom_ideas");
+      const list = stored ? JSON.parse(stored) : [];
+      localStorage.setItem("custom_ideas", JSON.stringify([...list, newIdea]));
+      router.push("/ideas");
+    } else {
+      const newResource = {
+        title,
+        description,
+        tag: category,
+      };
+      const stored = localStorage.getItem("custom_resources");
+      const list = stored ? JSON.parse(stored) : [];
+      localStorage.setItem("custom_resources", JSON.stringify([...list, newResource]));
+      router.push("/resources");
+    }
+  };
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -30,7 +71,7 @@ export default function SubmitPage() {
               <Button
                 key={t}
                 type="button"
-                onClick={() => setType(t)}
+                onClick={() => handleTypeChange(t)}
                 variant={type === t ? "default" : "ghost"}
                 size="sm"
                 className="rounded-lg text-xs capitalize px-4"
@@ -40,11 +81,13 @@ export default function SubmitPage() {
             ))}
           </div>
 
-          <form onSubmit={(e) => e.preventDefault()} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-zinc-400">Title</label>
               <Input
                 placeholder={type === "idea" ? "AI Mock Interviewer" : "Cursor"}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 className="rounded-xl border-zinc-800 bg-zinc-950/20 text-xs h-9"
               />
             </div>
@@ -57,6 +100,8 @@ export default function SubmitPage() {
                     ? "Explain your idea in a short sentence..."
                     : "What is this tool used for..."
                 }
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 rows={3}
                 className="rounded-xl border-zinc-800 bg-zinc-950/20 text-xs min-h-[80px]"
               />
@@ -68,6 +113,8 @@ export default function SubmitPage() {
               </label>
               <Input
                 placeholder={type === "idea" ? "AI & Education" : "AI"}
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
                 className="rounded-xl border-zinc-800 bg-zinc-950/20 text-xs h-9"
               />
             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { IdeaCard } from "./IdeaCard";
 import { Idea } from "../types";
@@ -51,8 +51,20 @@ const INITIAL_IDEAS: Idea[] = [
 ];
 
 export function IdeaList() {
-  const [ideas] = useState<Idea[]>(INITIAL_IDEAS);
+  const [ideas, setIdeas] = useState<Idea[]>(INITIAL_IDEAS);
   const [activeStatus, setActiveStatus] = useState<Idea["status"] | "All">("All");
+
+  useEffect(() => {
+    const stored = localStorage.getItem("custom_ideas");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setIdeas([...INITIAL_IDEAS, ...parsed]);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
 
   const filteredIdeas = ideas.filter((idea) => {
     return activeStatus === "All" || idea.status === activeStatus;
